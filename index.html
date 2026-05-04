@@ -455,7 +455,7 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
   };
 
   // Send to Google Sheet via Apps Script
-  if (APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+  if (APPS_SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbwXfRy3nF9atqLeW1QGJyVDbBJ7CiK82ZTUx-mV4-AMhS44_Izj5MjxlbzIw_Fwf33ugA/exec') {
     fetch(APPS_SCRIPT_URL, {
       method  : 'POST',
       mode    : 'no-cors',
