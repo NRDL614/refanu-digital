@@ -430,15 +430,15 @@ footer p { font-size: 13px; color: var(--muted); }
   });
 })();
 
-// ── 2. Form submit → Apps Script via GET (no CORS issues) ────
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx8nLs0Jm0jBJsINRYnPEJueQyWuXHOkZvF6swj_FWhgrtaoS80TgoPg92lph6qxexyrg/exec';
+// ── 2. Form submit → Apps Script ─────────────────────────────
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw4T2bVqm5K9Gtio7kab-P2xg82WxQ2sU3luWXIP4Nkz6xHJ8pMq3WwOgPrNFk1C_HWLg/exec';
 
 document.getElementById('contactForm').addEventListener('submit', function(e) {
   e.preventDefault();
 
-  var p = new URLSearchParams(window.location.search);
+  var params = new URLSearchParams(window.location.search);
 
-  var data = {
+  var payload = {
     nama          : document.getElementById('nama').value,
     telepon       : document.getElementById('telepon').value,
     email         : document.getElementById('email').value,
@@ -446,21 +446,25 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
     pesan         : document.getElementById('pesan').value,
     kategori      : 'N/A',
     lokasi        : 'N/A',
-    utm_source    : document.getElementById('utm_source').value || p.get('utm_source') || '(direct)',
-    utm_medium    : document.getElementById('utm_medium').value || p.get('utm_medium') || '(none)',
-    utm_campaign  : document.getElementById('utm_campaign').value || p.get('utm_campaign') || '(none)',
-    utm_content   : document.getElementById('utm_content').value || p.get('utm_content') || '(none)',
-    utm_term      : document.getElementById('utm_term').value || p.get('utm_term') || '(none)',
+    utm_source    : document.getElementById('utm_source').value || params.get('utm_source') || '(direct)',
+    utm_medium    : document.getElementById('utm_medium').value || params.get('utm_medium') || '(none)',
+    utm_campaign  : document.getElementById('utm_campaign').value || params.get('utm_campaign') || '(none)',
+    utm_content   : document.getElementById('utm_content').value || params.get('utm_content') || '(none)',
+    utm_term      : document.getElementById('utm_term').value || params.get('utm_term') || '(none)',
     source        : 'Form Web'
   };
 
-  // Image pixel GET — bypasses CORS entirely
-  var qs = Object.keys(data).map(function(k){
-    return encodeURIComponent(k)+'='+encodeURIComponent(data[k]);
-  }).join('&');
-  new Image().src = SCRIPT_URL + '?' + qs;
+  // Send to Google Sheet via Apps Script
+  if (APPS_SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbw4T2bVqm5K9Gtio7kab-P2xg82WxQ2sU3luWXIP4Nkz6xHJ8pMq3WwOgPrNFk1C_HWLg/exec') {
+    fetch(APPS_SCRIPT_URL, {
+      method  : 'POST',
+      mode    : 'no-cors',
+      headers : { 'Content-Type': 'application/json' },
+      body    : JSON.stringify(payload)
+    });
+  }
 
-  // Show success
+  // Show success, hide form
   document.getElementById('contactForm').style.display = 'none';
   document.getElementById('successMsg').style.display  = 'block';
 });
@@ -468,31 +472,32 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
 // ── 3. WhatsApp button — append UTM to message ───────────────
 document.getElementById('waHero').addEventListener('click', function(e) {
   e.preventDefault();
-  var p        = new URLSearchParams(window.location.search);
-  var campaign = p.get('utm_campaign') || '-';
-  var term     = p.get('utm_term')     || '-';
-  var source   = p.get('utm_source')   || '-';
-  var medium   = p.get('utm_medium')   || '-';
+  var params = new URLSearchParams(window.location.search);
+  var campaign = params.get('utm_campaign') || '-';
+  var term     = params.get('utm_term')     || '-';
+  var source   = params.get('utm_source')   || '-';
 
   var msg = 'Halo Refanu Digital, saya ingin konsultasi.' +
-            '
+            '\n\n--- Info iklan (internal) ---' +
+            '\nSumber   : ' + source +
+            '\nKampanye : ' + campaign +
+            '\nKeyword  : ' + term;
 
---- Info iklan (internal) ---' +
-            '
-Sumber   : ' + source +
-            '
-Kampanye : ' + campaign +
-            '
-Keyword  : ' + term;
-
-  // Log WA click to sheet
-  new Image().src = SCRIPT_URL +
-    '?nama=&telepon=&email=&jenis_layanan=&pesan=WhatsApp+click' +
-    '&kategori=N/A&lokasi=N/A&source=WhatsApp' +
-    '&utm_source='   + encodeURIComponent(source) +
-    '&utm_medium='   + encodeURIComponent(medium) +
-    '&utm_campaign=' + encodeURIComponent(campaign) +
-    '&utm_term='     + encodeURIComponent(term);
+  // Log to sheet too
+  if (APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+    fetch(APPS_SCRIPT_URL, {
+      method  : 'POST',
+      mode    : 'no-cors',
+      headers : { 'Content-Type': 'application/json' },
+      body    : JSON.stringify({
+        nama: '', telepon: '', email: '', jenis_layanan: '',
+        pesan: 'WhatsApp click', kategori: 'N/A', lokasi: 'N/A',
+        utm_source: source, utm_medium: params.get('utm_medium') || '-',
+        utm_campaign: campaign, utm_content: params.get('utm_content') || '-',
+        utm_term: term, source: 'WhatsApp'
+      })
+    });
+  }
 
   window.open('https://wa.me/628XXXXXXXXX?text=' + encodeURIComponent(msg), '_blank');
 });
