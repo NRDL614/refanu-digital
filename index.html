@@ -479,15 +479,10 @@ document.getElementById('waHero').addEventListener('click', function(e) {
   var medium   = p.get('utm_medium')   || '-';
 
   var msg = 'Halo Refanu Digital, saya ingin konsultasi.' +
-            '
-
---- Info iklan (internal) ---' +
-            '
-Sumber   : ' + source +
-            '
-Kampanye : ' + campaign +
-            '
-Keyword  : ' + term;
+            '\n\n--- Info iklan (internal) ---' +
+            '\nSumber   : ' + source +
+            '\nKampanye : ' + campaign +
+            '\nKeyword  : ' + term;
 
   // Log WA click to sheet
   new Image().src = SCRIPT_URL +
