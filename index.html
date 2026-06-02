@@ -458,11 +458,15 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
   var qs = Object.keys(data).map(function(k){
     return encodeURIComponent(k)+'='+encodeURIComponent(data[k]);
   }).join('&');
-  new Image().src = SCRIPT_URL + '?' + qs;
+  var img = new Image();
+  img.src = SCRIPT_URL + '?' + qs;
+  console.log('Firing to sheet:', img.src);
 
-  // Show success
-  document.getElementById('contactForm').style.display = 'none';
-  document.getElementById('successMsg').style.display  = 'block';
+  // Delay 500ms so image request fires before DOM update
+  setTimeout(function() {
+    document.getElementById('contactForm').style.display = 'none';
+    document.getElementById('successMsg').style.display  = 'block';
+  }, 500);
 });
 
 // ── 3. WhatsApp button — append UTM to message ───────────────
